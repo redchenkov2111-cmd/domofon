@@ -11,6 +11,7 @@ from .redis_client import r, publish_event, invalidate_history
 
 app = FastAPI(title="Call Service")
 
+
 async def log_event(level: str, message: str, extra: dict | None = None) -> None:
     if not settings.LOGGING_SERVICE_URL:
         return
@@ -18,8 +19,12 @@ async def log_event(level: str, message: str, extra: dict | None = None) -> None
         async with httpx.AsyncClient(timeout=2) as c:
             await c.post(
                 f"{settings.LOGGING_SERVICE_URL}/log",
-                json={"level": level, "service": "call_service",
-                      "message": message, "extra": extra or {}},
+                json={
+                    "level": level,
+                    "service": "call_service",
+                    "message": message,
+                    "extra": extra or {},
+                },
             )
     except Exception:
         pass
@@ -40,7 +45,6 @@ async def create_call(data: CallCreate, db: AsyncSession = Depends(get_session))
 
     call = await CallRepo(db).create(data.caller_id, data.callee_id)
 
-    # Observer: событие для WebSocket (этап 6)
     await publish_event(data.callee_id, {
         "event": "incoming_call",
         "call_id": call.id,
@@ -91,11 +95,19 @@ async def active_call(user_id: int, db: AsyncSession = Depends(get_session)):
 async def history(user_id: int, db: AsyncSession = Depends(get_session)):
     cache_key = f"history:{user_id}"
 
-    cached = await r.get(cache_key)
-    if cached:
-        return [CallOut.model_validate(x) for x in json.loads(cached)]
+    try:
+        cached = await r.get(cache_key)
+        if cached:
+            return [CallOut.model_validate(x) for x in json.loads(cached)]
+    except Exception:
+        pass
 
     calls = await CallRepo(db).history(user_id)
-    payload = [CallOut.model_validate(c).model_dump(mode="json") for c in calls]
-    await r.setex(cache_key, 30, json.dumps(payload))
+
+    try:
+        payload = [CallOut.model_validate(c).model_dump(mode="json") for c in calls]
+        await r.setex(cache_key, 30, json.dumps(payload))
+    except Exception:
+        pass
+
     return calls

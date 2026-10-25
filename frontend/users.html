@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Домофон — Пользователи</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="calls.html" data-page="calls.html">Звонки</a>
+      <a href="users.html" data-page="users.html">Пользователи</a>
+      <span class="user"></span>
+    </nav>
+  </header>
+
+  <main>
+    <section id="admin-only">
+      <h2>Добавить пользователя</h2>
+      <form class="inline" id="create-form">
+        <input name="name" placeholder="Имя" required />
+        <input name="apartment_number" placeholder="Квартира (число)" required />
+        <input name="phone" placeholder="+7..." required />
+        <input name="password" type="password" placeholder="Пароль" required />
+        <select name="role">
+          <option value="resident">resident</option>
+          <option value="admin">admin</option>
+        </select>
+        <button type="submit">Создать</button>
+      </form>
+      <div class="error" id="create-error"></div>
+    </section>
+
+    <section>
+      <h2>Список пользователей</h2>
+      <table id="users-table">
+        <thead>
+          <tr><th>ID</th><th>Имя</th><th>Квартира</th><th>Телефон</th><th>Роль</th><th></th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/users.js"></script>
+</body>
+</html>

@@ -4,6 +4,10 @@ from fastapi import FastAPI, Depends, HTTPException, Header, Response
 from .config import settings
 from .auth import current_user, require_admin
 
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pathlib import Path
+
 app = FastAPI(title="API Gateway")
 
 USER = settings.USER_SERVICE_URL
@@ -93,3 +97,26 @@ async def answer_call(call_id: int, payload: dict, _=Depends(current_user)):
 async def call_history(user=Depends(current_user)):
     user_id = int(user["sub"])
     return await _forward("GET", f"{settings.CALL_SERVICE_URL}/calls/history/{user_id}")
+
+# --- Статика frontend ---
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
+
+if FRONTEND_DIR.exists():
+    @app.get("/")
+    async def index():
+        return FileResponse(FRONTEND_DIR / "index.html")
+
+    @app.get("/{filename}.html")
+    async def html(filename: str):
+        file = FRONTEND_DIR / f"{filename}.html"
+        if file.exists():
+            return FileResponse(file)
+        raise HTTPException(404, "Page not found")
+
+    # Отдаём style.css прямо из корня frontend
+    @app.get("/style.css")
+    async def css():
+        return FileResponse(FRONTEND_DIR / "style.css")
+
+    # JS лежат в папке js (это совпадает с твоей структурой)
+    app.mount("/js", StaticFiles(directory=FRONTEND_DIR / "js"), name="js")

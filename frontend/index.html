@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Домофон — Вход</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="login-wrap">
+    <form class="login-card" id="login-form">
+      <h1>Домофон</h1>
+      <label for="phone">Телефон</label>
+      <input id="phone" name="phone" value="+70000000000" autocomplete="username" />
+      <label for="password">Пароль</label>
+      <input id="password" name="password" type="password" value="admin123" autocomplete="current-password" />
+      <div class="error" id="error"></div>
+      <button type="submit">Войти</button>
+      <p class="muted" style="margin-top:16px; font-size:12px;">Демо: +70000000000 / admin123</p>
+    </form>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>
