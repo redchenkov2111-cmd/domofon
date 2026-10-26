@@ -13,6 +13,7 @@ class CallOut(BaseModel):
     created_at: datetime
     answered_at: datetime | None
     model_config = {"from_attributes": True}
+    ended_at: datetime | None
 
 class AnswerIn(BaseModel):
     accepted: bool

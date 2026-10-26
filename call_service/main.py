@@ -111,3 +111,25 @@ async def history(user_id: int, db: AsyncSession = Depends(get_session)):
         pass
 
     return calls
+
+@app.post("/calls/{call_id}/end", response_model=CallOut)
+async def end_call(call_id: int, db: AsyncSession = Depends(get_session)):
+    call = await CallRepo(db).get(call_id)
+    if not call:
+        raise HTTPException(404, "Call not found")
+    if call.status in ("ended", "rejected"):
+        raise HTTPException(400, "Call already finished")
+
+    call = await CallRepo(db).set_status(call, "ended")
+    
+    payload = {
+        "event": "call_ended",
+        "call_id": call.id,
+        "status": "ended",
+        "ended_at": call.ended_at.isoformat() if call.ended_at else None,
+    }
+    await publish_event(call.caller_id, payload)
+    await publish_event(call.callee_id, payload)
+    await invalidate_history(call.caller_id)
+    await invalidate_history(call.callee_id)
+    return call

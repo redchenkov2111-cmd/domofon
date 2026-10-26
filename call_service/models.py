@@ -14,3 +14,4 @@ class Call(Base):
     status: Mapped[str] = mapped_column(String(20), default="ringing")
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     answered_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

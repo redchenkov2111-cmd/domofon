@@ -19,8 +19,11 @@ class CallRepo:
 
     async def set_status(self, call: Call, status: str) -> Call:
         call.status = status
-        if status in ("accepted", "rejected"):
-            call.answered_at = datetime.now(timezone.utc)
+        now = datetime.now(timezone.utc)
+        if status in ("accepted", "rejected") and not call.answered_at:
+            call.answered_at = now
+        elif status == "ended":
+            call.ended_at = now
         await self.db.commit()
         await self.db.refresh(call)
         return call

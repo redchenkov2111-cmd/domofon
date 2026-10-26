@@ -41,6 +41,9 @@ const api = {
     apiFetch("/calls", { method: "POST", body: JSON.stringify({ callee_id }) }),
   answerCall: (call_id, accepted) =>
     apiFetch(`/calls/${call_id}/answer`, { method: "POST", body: JSON.stringify({ accepted }) }),
+  endCall: (call_id) => 
+    apiFetch(`/calls/${call_id}/end`, { method: "POST" }),
+
   history: () => apiFetch("/calls/history"),
 };
 
