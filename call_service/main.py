@@ -3,6 +3,7 @@ import httpx
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from .auth import current_user
 from .config import settings
 from .db import get_session
 from .schemas import CallCreate, CallOut, AnswerIn
@@ -63,12 +64,15 @@ async def answer_call(
     call_id: int,
     data: AnswerIn,
     db: AsyncSession = Depends(get_session),
+    user: dict = Depends(current_user),
 ):
     call = await CallRepo(db).get(call_id)
     if not call:
         raise HTTPException(404, "Call not found")
     if call.status != "ringing":
         raise HTTPException(409, "Call already answered")
+    if call.callee_id != int(user["sub"]):
+        raise HTTPException(403, "Only callee can answer this call")
 
     status = "accepted" if data.accepted else "rejected"
     call = await CallRepo(db).set_status(call, status)
@@ -113,15 +117,21 @@ async def history(user_id: int, db: AsyncSession = Depends(get_session)):
     return calls
 
 @app.post("/calls/{call_id}/end", response_model=CallOut)
-async def end_call(call_id: int, db: AsyncSession = Depends(get_session)):
+async def end_call(
+    call_id: int,
+    db: AsyncSession = Depends(get_session),
+    user: dict = Depends(current_user),
+):
     call = await CallRepo(db).get(call_id)
     if not call:
         raise HTTPException(404, "Call not found")
     if call.status in ("ended", "rejected"):
         raise HTTPException(400, "Call already finished")
+    uid = int(user["sub"])
+    if uid not in (call.caller_id, call.callee_id):
+        raise HTTPException(403, "Only participants can end this call")
 
     call = await CallRepo(db).set_status(call, "ended")
-    
     payload = {
         "event": "call_ended",
         "call_id": call.id,

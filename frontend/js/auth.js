@@ -19,6 +19,7 @@ function logout() {
 function fillHeader() {
   const me = getUser();
   if (!me) return;
+
   const userSlot = document.querySelector("header nav .user");
   if (userSlot) {
     userSlot.innerHTML =
@@ -29,6 +30,13 @@ function fillHeader() {
       logout();
     });
   }
+
+  // Скрываем ссылку на админку для обычных жителей
+  const adminLink = document.querySelector("header nav a[href='users.html']");
+  if (adminLink && me.role !== "admin") {
+    adminLink.style.display = "none";
+  }
+
   const path = location.pathname.split("/").pop();
   document.querySelectorAll("header nav a[data-page]").forEach((a) => {
     if (a.dataset.page === path) a.classList.add("active");

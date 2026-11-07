@@ -14,4 +14,5 @@ class User(Base):
     phone: Mapped[str] = mapped_column(String(20), unique=True)
     password_hash: Mapped[str] = mapped_column(String(200))
     role: Mapped[str] = mapped_column(String(20), default="resident")
+    house: Mapped[str] = mapped_column(String(100), default="Дом 1")   # ← добавить
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

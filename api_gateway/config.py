@@ -15,8 +15,7 @@ class Settings(BaseSettings):
     USER_SERVICE_URL: str
     CALL_SERVICE_URL: str = "http://localhost:8002"
     CALL_PROVIDER_URL: str = "http://localhost:8003"
-    
-    # --- ДОБАВИТЬ ВОТ ЭТУ СТРОКУ ---
+    LOGGING_SERVICE_URL: str = ""
     REDIS_URL: str
 
 settings = Settings()

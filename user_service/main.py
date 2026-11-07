@@ -41,6 +41,7 @@ async def lifespan(app: FastAPI):
                 phone="+70000000000",
                 password="admin123",
                 role="admin",
+                house="Дом 1",
             ))
             print("Seeded admin user: +70000000000 / admin123")
     yield
@@ -72,14 +73,17 @@ async def login(data: LoginIn, db: AsyncSession = Depends(get_session)):
         raise HTTPException(401, "Invalid credentials")
     await log_event("info", "user_login", {"user_id": user.id})
     return TokenOut(
-        token=create_token(user.id, user.role),
+        token=create_token(user.id, user.role, user.house),
         user=UserOut.model_validate(user),
     )
 
 
 @app.get("/users", response_model=list[UserOut])
-async def list_users(db: AsyncSession = Depends(get_session)):
-    return await UserRepo(db).list()
+async def list_users(
+    house: str | None = None,
+    db: AsyncSession = Depends(get_session),
+):
+    return await UserRepo(db).list(house=house)
 
 
 @app.get("/users/{user_id}", response_model=UserOut)

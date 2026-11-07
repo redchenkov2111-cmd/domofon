@@ -15,8 +15,11 @@ class UserRepo:
         result = await self.db.execute(select(User).where(User.phone == phone))
         return result.scalar_one_or_none()
 
-    async def list(self) -> list[User]:
-        result = await self.db.execute(select(User).order_by(User.id))
+    async def list(self, house: str | None = None) -> list[User]:
+        q = select(User).order_by(User.id)
+        if house:
+            q = q.where(User.house == house)
+        result = await self.db.execute(q)
         return list(result.scalars().all())
 
     async def create(self, data: UserCreate) -> User:
@@ -26,6 +29,7 @@ class UserRepo:
             phone=data.phone,
             password_hash=hash_password(data.password),
             role=data.role,
+            house=data.house,
         )
         self.db.add(user)
         await self.db.commit()
@@ -33,14 +37,11 @@ class UserRepo:
         return user
 
     async def update(self, user: User, data: UserUpdate) -> User:
-        if data.name is not None:
-            user.name = data.name
-        if data.apartment_number is not None:
-            user.apartment_number = data.apartment_number
-        if data.phone is not None:
-            user.phone = data.phone
-        if data.password is not None:
-            user.password_hash = hash_password(data.password)
+        if data.name is not None: user.name = data.name
+        if data.apartment_number is not None: user.apartment_number = data.apartment_number
+        if data.phone is not None: user.phone = data.phone
+        if data.password is not None: user.password_hash = hash_password(data.password)
+        if data.house is not None: user.house = data.house
         await self.db.commit()
         await self.db.refresh(user)
         return user

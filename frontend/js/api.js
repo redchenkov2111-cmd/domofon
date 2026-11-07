@@ -36,7 +36,7 @@ const api = {
   listUsers: () => apiFetch("/users"),
   createUser: (data) => apiFetch("/users", { method: "POST", body: JSON.stringify(data) }),
   deleteUser: (id) => apiFetch(`/users/${id}`, { method: "DELETE" }),
-
+  updateUser: (id, data) => apiFetch(`/users/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   makeCall: (callee_id) =>
     apiFetch("/calls", { method: "POST", body: JSON.stringify({ callee_id }) }),
   answerCall: (call_id, accepted) =>

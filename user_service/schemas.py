@@ -7,12 +7,14 @@ class UserCreate(BaseModel):
     phone: str = Field(pattern=r"^\+?\d{10,15}$")
     password: str = Field(min_length=4)
     role: str = Field(default="resident", pattern=r"^(admin|resident)$")
+    house: str = Field(default="Дом 1", min_length=1, max_length=100)   # ← добавить
 
 class UserUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=100)
     apartment_number: str | None = Field(default=None, pattern=r"^\d{1,5}$")
     phone: str | None = Field(default=None, pattern=r"^\+?\d{10,15}$")
     password: str | None = Field(default=None, min_length=4)
+    house: str | None = Field(default=None, min_length=1, max_length=100)   # ← добавить
 
 class UserOut(BaseModel):
     id: int
@@ -20,6 +22,7 @@ class UserOut(BaseModel):
     apartment_number: str
     phone: str
     role: str
+    house: str   # ← добавить
     created_at: datetime
     model_config = {"from_attributes": True}
 

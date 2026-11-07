@@ -13,6 +13,7 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str
     REDIS_URL: str
+    JWT_SECRET: str
     LOGGING_SERVICE_URL: str = ""
 
 settings = Settings()

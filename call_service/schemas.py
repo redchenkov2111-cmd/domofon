@@ -12,8 +12,8 @@ class CallOut(BaseModel):
     status: str
     created_at: datetime
     answered_at: datetime | None
+    ended_at: datetime | None  # <-- ОБЯЗАТЕЛЬНО ДОЛЖНО БЫТЬ ЗДЕСЬ
     model_config = {"from_attributes": True}
-    ended_at: datetime | None
-
+    
 class AnswerIn(BaseModel):
     accepted: bool

@@ -11,10 +11,11 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, password_hash: str) -> bool:
     return bcrypt.checkpw(password.encode(), password_hash.encode())
 
-def create_token(user_id: int, role: str) -> str:
+def create_token(user_id: int, role: str, house: str) -> str:   # ← + house
     payload = {
         "sub": str(user_id),
         "role": role,
+        "house": house,                                    # ← добавить
         "exp": datetime.now(timezone.utc) + timedelta(hours=24),
     }
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=ALGO)

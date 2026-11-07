@@ -19,7 +19,8 @@
       <h2>Добавить пользователя</h2>
       <form class="inline" id="create-form">
         <input name="name" placeholder="Имя" required />
-        <input name="apartment_number" placeholder="Квартира (число)" required />
+        <input name="apartment_number" placeholder="Квартира" required />
+        <input name="house" placeholder="Дом" value="Дом 1" required />
         <input name="phone" placeholder="+7..." required />
         <input name="password" type="password" placeholder="Пароль" required />
         <select name="role">
@@ -32,10 +33,20 @@
     </section>
 
     <section>
-      <h2>Список пользователей</h2>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+        <h2 style="margin: 0;">Список пользователей</h2>
+        <label style="font-size: 14px;">
+          Дом:
+          <select id="filter-house" style="margin-left: 6px;">
+            <option value="">— все —</option>
+          </select>
+        </label>
+      </div>
       <table id="users-table">
         <thead>
-          <tr><th>ID</th><th>Имя</th><th>Квартира</th><th>Телефон</th><th>Роль</th><th></th></tr>
+          <tr>
+            <th>ID</th><th>Имя</th><th>Квартира</th><th>Дом</th><th>Телефон</th><th>Роль</th><th></th>
+          </tr>
         </thead>
         <tbody></tbody>
       </table>

@@ -14,6 +14,7 @@ app = FastAPI(title="API Gateway")
 USER = settings.USER_SERVICE_URL
 CALL = settings.CALL_SERVICE_URL
 PROVIDER = settings.CALL_PROVIDER_URL
+LOGGING = settings.LOGGING_SERVICE_URL
 
 
 async def _forward(method: str, url: str, **kwargs):
@@ -43,8 +44,21 @@ async def login(payload: dict):
 
 # --- Users ---
 @app.get("/api/users")
-async def list_users(_=Depends(current_user)):
-    return await _forward("GET", f"{USER}/users")
+async def list_users(house: str | None = None, user=Depends(current_user)):
+    params = {}
+    if user.get("role") != "admin":
+        # Житель: принудительно его собственный дом
+        user_house = user.get("house")
+        if not user_house:
+            # Старый JWT без house — подтягиваем из User Service
+            user_data = await _forward("GET", f"{USER}/users/{user['sub']}")
+            user_house = user_data.get("house", "Дом 1")
+        params["house"] = user_house
+    elif house:
+        # Админ может фильтровать вручную
+        params["house"] = house
+    
+    return await _forward("GET", f"{USER}/users", params=params)
 
 
 @app.get("/api/users/{user_id}")
@@ -106,23 +120,52 @@ async def make_call(payload: dict, user=Depends(current_user)):
 
 
 @app.post("/api/calls/{call_id}/answer")
-async def answer_call(call_id: int, payload: dict, _=Depends(current_user)):
+async def answer_call(
+    call_id: int,
+    payload: dict,
+    authorization: str = Header(...),
+    _=Depends(current_user),
+):
     return await _forward(
         "POST",
         f"{CALL}/calls/{call_id}/answer",
+        headers={"Authorization": authorization},
         json=payload,
     )
 
 
 @app.post("/api/calls/{call_id}/end")
-async def end_call(call_id: int, _=Depends(current_user)):
-    return await _forward("POST", f"{CALL}/calls/{call_id}/end")
+async def end_call(
+    call_id: int,
+    authorization: str = Header(...),
+    _=Depends(current_user),
+):
+    return await _forward(
+        "POST",
+        f"{CALL}/calls/{call_id}/end",
+        headers={"Authorization": authorization},
+    )
 
 
 @app.get("/api/calls/history")
 async def call_history(user=Depends(current_user)):
     user_id = int(user["sub"])
     return await _forward("GET", f"{CALL}/calls/history/{user_id}")
+
+
+# --- Logs (только для админа) ---
+@app.get("/api/logs")
+async def get_logs(
+    service: str | None = None,
+    limit: int = 100,
+    _=Depends(require_admin),
+):
+    if not LOGGING:
+        raise HTTPException(503, "Logging service not configured")
+    params = {"limit": limit}
+    if service:
+        params["service"] = service
+    return await _forward("GET", f"{LOGGING}/logs", params=params)
 
 
 # --- WebSocket ---

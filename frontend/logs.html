@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Домофон — Логи</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="calls.html" data-page="calls.html">Звонки</a>
+      <a href="users.html" data-page="users.html">Панель администратора</a>
+      <a href="logs.html" data-page="logs.html">Логи</a>
+      <span class="user"></span>
+    </nav>
+  </header>
+
+  <main>
+    <section>
+      <h2>Системные логи</h2>
+      <div style="margin-bottom: 12px;">
+        <label>Сервис:
+          <select id="filter-service">
+            <option value="">— все —</option>
+            <option value="user_service">user_service</option>
+            <option value="call_service">call_service</option>
+            <option value="call_provider">call_provider</option>
+            <option value="api_gateway">api_gateway</option>
+          </select>
+        </label>
+        <button onclick="loadLogs()" style="margin-left: 8px;">Обновить</button>
+      </div>
+      <table id="logs-table">
+        <thead>
+          <tr><th>ID</th><th>Время</th><th>Уровень</th><th>Сервис</th><th>Сообщение</th><th>Данные</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    requireAuth();
+    fillHeader();
+
+    const me = getUser();
+    if (!me || me.role !== "admin") {
+      alert("Доступ только для администратора");
+      location.href = "calls.html";
+    }
+
+    async function loadLogs() {
+      const tbody = document.querySelector("#logs-table tbody");
+      tbody.innerHTML = "<tr><td colspan='6' class='muted'>Загрузка…</td></tr>";
+      const service = document.getElementById("filter-service").value;
+      let path = "/logs?limit=200";
+      if (service) path += `&service=${encodeURIComponent(service)}`;
+      try {
+        const logs = await apiFetch(path);
+        if (!logs.length) {
+          tbody.innerHTML = "<tr><td colspan='6' class='muted'>Логов нет</td></tr>";
+          return;
+        }
+        tbody.innerHTML = logs.map((l) => `
+          <tr>
+            <td>${l.id}</td>
+            <td>${new Date(l.created_at).toLocaleString()}</td>
+            <td>${escapeHtml(l.level)}</td>
+            <td>${escapeHtml(l.service)}</td>
+            <td>${escapeHtml(l.message)}</td>
+            <td><code style="font-size:12px;">${escapeHtml(JSON.stringify(l.extra))}</code></td>
+          </tr>`).join("");
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan='6' class='error'>${escapeHtml(e.message)}</td></tr>`;
+      }
+    }
+
+    loadLogs();
+    setInterval(loadLogs, 5000);
+  </script>
+</body>
+</html>
