@@ -3,8 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 import jwt
-from jwt.exceptions import PyJWTError as JWTError
-
+from jwt import InvalidTokenError as JWTError
 from .config import settings
 from .db import get_session, SessionLocal
 from .schemas import UserCreate, UserUpdate, UserOut, LoginIn, TokenOut

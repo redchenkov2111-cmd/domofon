@@ -1,6 +1,6 @@
 from fastapi import Header, HTTPException
 import jwt
-from jwt.exceptions import PyJWTError as JWTError
+from jwt import InvalidTokenError as JWTError
 from .config import settings
 
 ALGO = "HS256"

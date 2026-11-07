@@ -1,0 +1,102 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: domofon
+      POSTGRES_PASSWORD: domofon_pass
+      POSTGRES_DB: domofon
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U domofon"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  user_service:
+    build: .
+    command: uvicorn user_service.main:app --host 0.0.0.0 --port 8001
+    environment:
+      DATABASE_URL: postgresql+psycopg://domofon:domofon_pass@db:5432/domofon
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: domofon-super-secret-key-for-students-2026
+      LOGGING_SERVICE_URL: http://logging_service:8004
+    depends_on:
+      db:
+        condition: service_healthy
+      logging_service:
+        condition: service_started
+
+  call_service:
+    build: .
+    command: uvicorn call_service.main:app --host 0.0.0.0 --port 8002
+    environment:
+      DATABASE_URL: postgresql+psycopg://domofon:domofon_pass@db:5432/domofon
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: domofon-super-secret-key-for-students-2026
+      LOGGING_SERVICE_URL: http://logging_service:8004
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  call_provider:
+    build: .
+    command: uvicorn call_provider.main:app --host 0.0.0.0 --port 8003
+    environment:
+      USER_SERVICE_URL: http://user_service:8001
+      CALL_SERVICE_URL: http://call_service:8002
+      LOGGING_SERVICE_URL: http://logging_service:8004
+    depends_on:
+      - user_service
+      - call_service
+
+  logging_service:
+    build: .
+    command: uvicorn logging_service.main:app --host 0.0.0.0 --port 8004
+    environment:
+      DATABASE_URL: postgresql+psycopg://domofon:domofon_pass@db:5432/domofon
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api_gateway:
+    build: .
+    command: uvicorn api_gateway.main:app --host 0.0.0.0 --port 8000
+    environment:
+      USER_SERVICE_URL: http://user_service:8001
+      CALL_SERVICE_URL: http://call_service:8002
+      CALL_PROVIDER_URL: http://call_provider:8003
+      LOGGING_SERVICE_URL: http://logging_service:8004
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: domofon-super-secret-key-for-students-2026
+    depends_on:
+      - user_service
+      - call_service
+      - call_provider
+      - redis
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - api_gateway
+
+volumes:
+  pgdata:

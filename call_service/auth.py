@@ -1,5 +1,5 @@
 import jwt
-from jwt.exceptions import PyJWTError
+from jwt import InvalidTokenError as PyJWTError
 from fastapi import Header, HTTPException
 from .config import settings
 
