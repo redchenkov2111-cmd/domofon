@@ -31,7 +31,7 @@ services:
       - key: JWT_SECRET
         generateValue: true 
       - key: LOGGING_SERVICE_URL
-        sync: false # <-- Разрешаем ручное редактирование
+        value: https://logging-service-jiwk.onrender.com:10000
 
   - type: web
     name: call-service
@@ -57,7 +57,8 @@ services:
           name: user-service
           envVarKey: JWT_SECRET
       - key: LOGGING_SERVICE_URL
-        sync: false
+        value: https://logging-service-jiwk.onrender.com:10000
+
 
   - type: web
     name: call-provider
@@ -69,11 +70,11 @@ services:
     healthCheckPath: /health
     envVars:
       - key: USER_SERVICE_URL
-        sync: false
+        value: https://user-service-x69e.onrender.com:10000
       - key: CALL_SERVICE_URL
-        sync: false
+        value: https://call-service-f9jz.onrender.com:10000
       - key: LOGGING_SERVICE_URL
-        sync: false
+        value: https://logging-service-jiwk.onrender.com:10000
 
   - type: web
     name: logging-service
@@ -99,13 +100,13 @@ services:
     healthCheckPath: /health
     envVars:
       - key: USER_SERVICE_URL
-        sync: false
+        value: https://user-service-x69e.onrender.com:10000
       - key: CALL_SERVICE_URL
-        sync: false
+        value: https://call-service-f9jz.onrender.com:10000
       - key: CALL_PROVIDER_URL
-        sync: false
+        value: https://call-provider-q8kv.onrender.com:10000
       - key: LOGGING_SERVICE_URL
-        sync: false
+        value: https://logging-service-jiwk.onrender.com:10000
       - key: REDIS_URL
         fromService:
           type: redis
