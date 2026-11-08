@@ -8,8 +8,17 @@ from .auth import current_user, require_admin
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pathlib import Path
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI(title="API Gateway")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Для продакшена лучше указать точный URL фронтенда
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 USER = settings.USER_SERVICE_URL
 CALL = settings.CALL_SERVICE_URL

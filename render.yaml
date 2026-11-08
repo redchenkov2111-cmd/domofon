@@ -1,0 +1,124 @@
+databases:
+  - name: domofon-db
+    databaseName: domofon
+    user: domofon
+    plan: free
+
+services:
+  # Redis (Key Value)
+  - type: redis
+    name: domofon-redis
+    plan: free
+    ipAllowList: [] # Доступ только из внутренней сети Render
+
+  # 1. User Service
+  - type: web
+    name: user-service
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: uvicorn user_service.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: domofon-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: domofon-redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true # Render сгенерирует случайный секрет
+      - key: LOGGING_SERVICE_URL
+        value: http://logging-service:8004
+
+  # 2. Call Service
+  - type: web
+    name: call-service
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: uvicorn call_service.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: domofon-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: domofon-redis
+          property: connectionString
+      - key: JWT_SECRET
+        fromService:
+          type: web
+          name: user-service
+          envVarKey: JWT_SECRET
+      - key: LOGGING_SERVICE_URL
+        value: http://logging-service:8004
+
+  # 3. Call Provider
+  - type: web
+    name: call-provider
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: uvicorn call_provider.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: USER_SERVICE_URL
+        value: http://user-service:8001
+      - key: CALL_SERVICE_URL
+        value: http://call-service:8002
+      - key: LOGGING_SERVICE_URL
+        value: http://logging-service:8004
+
+  # 4. Logging Service
+  - type: web
+    name: logging-service
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: uvicorn logging_service.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: domofon-db
+          property: connectionString
+
+  # 5. API Gateway (единственный публичный сервис)
+  - type: web
+    name: api-gateway
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: uvicorn api_gateway.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: USER_SERVICE_URL
+        value: http://user-service:8001
+      - key: CALL_SERVICE_URL
+        value: http://call-service:8002
+      - key: CALL_PROVIDER_URL
+        value: http://call-provider:8003
+      - key: LOGGING_SERVICE_URL
+        value: http://logging-service:8004
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: domofon-redis
+          property: connectionString
+      - key: JWT_SECRET
+        fromService:
+          type: web
+          name: user-service
+          envVarKey: JWT_SECRET
