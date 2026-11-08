@@ -31,10 +31,7 @@ services:
       - key: JWT_SECRET
         generateValue: true 
       - key: LOGGING_SERVICE_URL
-        fromService:
-          type: web
-          name: logging-service
-          property: host
+        sync: false # <-- Разрешаем ручное редактирование
 
   - type: web
     name: call-service
@@ -60,10 +57,7 @@ services:
           name: user-service
           envVarKey: JWT_SECRET
       - key: LOGGING_SERVICE_URL
-        fromService:
-          type: web
-          name: logging-service
-          property: host
+        sync: false
 
   - type: web
     name: call-provider
@@ -75,20 +69,11 @@ services:
     healthCheckPath: /health
     envVars:
       - key: USER_SERVICE_URL
-        fromService:
-          type: web
-          name: user-service
-          property: host
+        sync: false
       - key: CALL_SERVICE_URL
-        fromService:
-          type: web
-          name: call-service
-          property: host
+        sync: false
       - key: LOGGING_SERVICE_URL
-        fromService:
-          type: web
-          name: logging-service
-          property: host
+        sync: false
 
   - type: web
     name: logging-service
@@ -114,25 +99,13 @@ services:
     healthCheckPath: /health
     envVars:
       - key: USER_SERVICE_URL
-        fromService:
-          type: web
-          name: user-service
-          property: host
+        sync: false
       - key: CALL_SERVICE_URL
-        fromService:
-          type: web
-          name: call-service
-          property: host
+        sync: false
       - key: CALL_PROVIDER_URL
-        fromService:
-          type: web
-          name: call-provider
-          property: host
+        sync: false
       - key: LOGGING_SERVICE_URL
-        fromService:
-          type: web
-          name: logging-service
-          property: host
+        sync: false
       - key: REDIS_URL
         fromService:
           type: redis
