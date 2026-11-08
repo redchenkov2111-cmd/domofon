@@ -129,8 +129,8 @@ document.querySelector("#history-table").addEventListener("click", async (e) => 
 function connectWebSocket() {
   const token = localStorage.getItem("token");
   if (!token) return;
-  const proto = location.protocol === "https:" ? "wss" : "ws";
-  const ws = new WebSocket(`${proto}://${location.host}/ws?token=${token}`);
+  
+  const ws = new WebSocket(`wss://api-gateway-me3u.onrender.com/ws?token=${token}`);
 
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
