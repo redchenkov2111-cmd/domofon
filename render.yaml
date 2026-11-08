@@ -5,13 +5,11 @@ databases:
     plan: free
 
 services:
-  # Redis (Key Value)
   - type: redis
     name: domofon-redis
     plan: free
-    ipAllowList: [] # Доступ только из внутренней сети Render
+    ipAllowList: []
 
-  # 1. User Service
   - type: web
     name: user-service
     runtime: docker
@@ -33,9 +31,11 @@ services:
       - key: JWT_SECRET
         generateValue: true 
       - key: LOGGING_SERVICE_URL
-        value: http://logging-service:10000
+        fromService:
+          type: web
+          name: logging-service
+          property: host
 
-  # 2. Call Service
   - type: web
     name: call-service
     runtime: docker
@@ -60,9 +60,11 @@ services:
           name: user-service
           envVarKey: JWT_SECRET
       - key: LOGGING_SERVICE_URL
-        value: http://logging-service:10000
+        fromService:
+          type: web
+          name: logging-service
+          property: host
 
-  # 3. Call Provider
   - type: web
     name: call-provider
     runtime: docker
@@ -73,13 +75,21 @@ services:
     healthCheckPath: /health
     envVars:
       - key: USER_SERVICE_URL
-        value: http://user-service:10000
+        fromService:
+          type: web
+          name: user-service
+          property: host
       - key: CALL_SERVICE_URL
-        value: http://call-service:10000
+        fromService:
+          type: web
+          name: call-service
+          property: host
       - key: LOGGING_SERVICE_URL
-        value: http://logging-service:10000
+        fromService:
+          type: web
+          name: logging-service
+          property: host
 
-  # 4. Logging Service
   - type: web
     name: logging-service
     runtime: docker
@@ -94,7 +104,6 @@ services:
           name: domofon-db
           property: connectionString
 
-  # 5. API Gateway (единственный публичный сервис)
   - type: web
     name: api-gateway
     runtime: docker
@@ -105,13 +114,25 @@ services:
     healthCheckPath: /health
     envVars:
       - key: USER_SERVICE_URL
-        value: http://user-service:10000
+        fromService:
+          type: web
+          name: user-service
+          property: host
       - key: CALL_SERVICE_URL
-        value: http://call-service:10000
+        fromService:
+          type: web
+          name: call-service
+          property: host
       - key: CALL_PROVIDER_URL
-        value: http://call-provider:10000
+        fromService:
+          type: web
+          name: call-provider
+          property: host
       - key: LOGGING_SERVICE_URL
-        value: http://logging-service:10000
+        fromService:
+          type: web
+          name: logging-service
+          property: host
       - key: REDIS_URL
         fromService:
           type: redis
