@@ -31,9 +31,9 @@ services:
           name: domofon-redis
           property: connectionString
       - key: JWT_SECRET
-        generateValue: true # Render сгенерирует случайный секрет
+        generateValue: true 
       - key: LOGGING_SERVICE_URL
-        value: http://logging-service:8004
+        value: http://logging-service:10000
 
   # 2. Call Service
   - type: web
@@ -60,7 +60,7 @@ services:
           name: user-service
           envVarKey: JWT_SECRET
       - key: LOGGING_SERVICE_URL
-        value: http://logging-service:8004
+        value: http://logging-service:10000
 
   # 3. Call Provider
   - type: web
@@ -73,11 +73,11 @@ services:
     healthCheckPath: /health
     envVars:
       - key: USER_SERVICE_URL
-        value: http://user-service:8001
+        value: http://user-service:10000
       - key: CALL_SERVICE_URL
-        value: http://call-service:8002
+        value: http://call-service:10000
       - key: LOGGING_SERVICE_URL
-        value: http://logging-service:8004
+        value: http://logging-service:10000
 
   # 4. Logging Service
   - type: web
@@ -105,13 +105,13 @@ services:
     healthCheckPath: /health
     envVars:
       - key: USER_SERVICE_URL
-        value: http://user-service:8001
+        value: http://user-service:10000
       - key: CALL_SERVICE_URL
-        value: http://call-service:8002
+        value: http://call-service:10000
       - key: CALL_PROVIDER_URL
-        value: http://call-provider:8003
+        value: http://call-provider:10000
       - key: LOGGING_SERVICE_URL
-        value: http://logging-service:8004
+        value: http://logging-service:10000
       - key: REDIS_URL
         fromService:
           type: redis
