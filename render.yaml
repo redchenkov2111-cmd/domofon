@@ -31,7 +31,7 @@ services:
       - key: JWT_SECRET
         generateValue: true 
       - key: LOGGING_SERVICE_URL
-        value: https://logging-service-jiwk:10000
+        value: https://logging-service-jiwk.onrender.com
 
   - type: web
     name: call-service
@@ -57,8 +57,7 @@ services:
           name: user-service
           envVarKey: JWT_SECRET
       - key: LOGGING_SERVICE_URL
-        value: https://logging-service-jiwk:10000
-
+        value: https://logging-service-jiwk.onrender.com
 
   - type: web
     name: call-provider
@@ -70,11 +69,11 @@ services:
     healthCheckPath: /health
     envVars:
       - key: USER_SERVICE_URL
-        value: https://user-service-x69e:10000
+        value: https://user-service-x69e.onrender.com
       - key: CALL_SERVICE_URL
-        value: https://call-service-f9jz:10000
+        value: https://call-service-f9jz.onrender.com
       - key: LOGGING_SERVICE_URL
-        value: https://logging-service-jiwk:10000
+        value: https://logging-service-jiwk.onrender.com
 
   - type: web
     name: logging-service
@@ -100,13 +99,13 @@ services:
     healthCheckPath: /health
     envVars:
       - key: USER_SERVICE_URL
-        value: https://user-service-x69e:10000
+        value: https://user-service-x69e.onrender.com
       - key: CALL_SERVICE_URL
-        value: https://call-service-f9jz:10000
+        value: https://call-service-f9jz.onrender.com
       - key: CALL_PROVIDER_URL
-        value: https://call-provider-q8kv:10000
+        value: https://call-provider.onrender.com
       - key: LOGGING_SERVICE_URL
-        value: https://logging-service-jiwk:10000
+        value: https://logging-service-jiwk.onrender.com
       - key: REDIS_URL
         fromService:
           type: redis
